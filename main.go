@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"time"
 
 	"github.com/nGPU/common"
 	log4plus "github.com/nGPU/common/log4go"
 	"github.com/nGPU/discordBot/configure"
-	"github.com/nGPU/discordBot/header"
 	"github.com/nGPU/discordBot/process"
 	"github.com/nGPU/discordBot/web"
 )
@@ -36,7 +36,7 @@ func (f *Flags) Check() (needReturn bool) {
 		flag.Usage()
 		needReturn = true
 	} else if f.Version {
-		verString := header.DiscordName + " Version: " + DiscordVersion + "\r\n"
+		verString := configure.SingtonConfigure().Application.Comment + " Version: " + DiscordVersion + "\r\n"
 		fmt.Println(verString)
 		needReturn = true
 	}
@@ -76,17 +76,33 @@ func setLog() {
 }
 
 func main() {
+
+	//write crash dump file
+	defer func() {
+		if r := recover(); r != nil {
+			dumpFile := fmt.Sprintf("crashDump_%s_%s.log", time.Now().Format("20060102_15_04_05"), fmt.Sprintf("%06d", time.Now().Nanosecond()/1e3))
+			f, err := os.Create(dumpFile)
+			if err != nil {
+				log4plus.Error("Failed to create crash dump file err=[%s]", err.Error())
+				return
+			}
+			defer f.Close()
+			f.Write(debug.Stack())
+			log4plus.Info("Crash dump saved to", dumpFile)
+		}
+	}()
+
 	needReturn := flags.Check()
 	if needReturn {
 		return
 	}
 	setLog()
 	defer log4plus.Close()
-	if strings.Trim(configure.SingtonConfigure().Token.DiscordToken, " ") == "" {
+	if strings.Trim(configure.SingtonConfigure().Token.Discord.Token, " ") == "" {
 		log4plus.Error("<<<<---->>>> Discord Token is empty")
 		return
 	}
-	log4plus.Info("Discord Token is [%s]", configure.SingtonConfigure().Token.DiscordToken)
+	log4plus.Info("Discord Token is [%s]", configure.SingtonConfigure().Token.Discord.Token)
 	web.SingtonWeb()
 	process.SingtonProcess()
 	for {

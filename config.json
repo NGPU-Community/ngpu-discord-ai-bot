@@ -1,0 +1,167 @@
+{
+    "application": {
+    	"name": "AiInfura",
+        "comment": "Discord Bot for AiInfura"
+    },
+    "token": {
+    	"discord": {
+			"token": "",
+			"guildId": "1090191264948957304",
+			"welcomeChannelId": "1258725519000600607"
+		},
+		"telegram": {
+			"token": ""
+		}
+    },
+    "stripe": {
+        "userListen": "0.0.0.0:8083",
+        "paymentUrl": "",
+        "privateKey": ""
+    },
+    "resource": {
+        "listen": "0.0.0.0:80",
+        "domain": "http://discord.aiinfura.com/user/download",
+        "resourcePath": "/root/go/src/github.com/nGPU/discordBot/files"
+    },
+    "Mysql": {
+        "Ip": "52.68.78.235",
+        "Port": 3306,
+        "DBName": "discordBot",
+        "Charset": "utf8",
+        "UserName": "root",
+        "Password": "Welcome123!@#"
+    },
+    "aiModules": {
+    		"anthropic": {
+			    "apiKey": ""
+		    },
+		    "chatGPT": {
+			    "apiKey": ""
+		    }
+    },
+    "interfaces": {
+        "manager": {
+            "register": "https://ngpu.ai/user/manager/register",
+            "getUser": "http://api-mcc.ipolloverse.cn:18070/openapi/key/one"
+        },
+        "btc": {
+            "btcAmt": "https://ngpu.ai/user/brc20/checkAddress"
+        },
+        "faceFusion": {
+            "base": {
+                "channelId": "1090191265439699076",
+                "channelName": "faceFusion"
+            },
+            "urls": {
+                "blackWhite2Color": {
+                    "methodMode": 1,
+                    "methodUrl": "https://ngpu.ai/user/schedulingTask?paramUrl=start&paramPort=8075&taskMode=Async",
+                    "getTask": "https://ngpu.ai/user/queryTask",
+                    "comment": "https://aiinfura.readme.io/reference/blackwhite2color"
+                },
+                "lipSyncer": {
+                    "methodMode": 1,
+                    "methodUrl": "https://ngpu.ai/user/schedulingTask?paramUrl=start&paramPort=8075&taskMode=Async",
+                    "getTask": "https://ngpu.ai/user/queryTask",
+                    "comment": "https://aiinfura.readme.io/reference/lipsyncer"
+                },
+                "faceSwap": {
+                    "methodMode": 1,
+                    "methodUrl": "https://ngpu.ai/user/schedulingTask?paramUrl=start&paramPort=8075&taskMode=Async",
+                    "getTask": "https://ngpu.ai/user/queryTask",
+                    "comment": "https://aiinfura.readme.io/reference/faceswap"
+                },
+                "frameEnhance": {
+                    "methodMode": 1,
+                    "methodUrl": "https://ngpu.ai/user/schedulingTask?paramUrl=start&paramPort=8075&taskMode=Async",
+                    "getTask": "https://ngpu.ai/user/queryTask",
+                    "comment": "https://aiinfura.readme.io/reference/frameenhance"
+                }
+            }
+        },
+        "sadTalker": {
+            "base": {
+                "channelId": "1090191265439699076",
+                "channelName": "sadTalker"
+            },
+            "urls": {
+                "sadTalker": {
+                    "methodMode": 1,
+                    "methodUrl": "https://ngpu.ai/user/schedulingTask?paramUrl=sadTalker&paramPort=8075&taskMode=Async",
+                    "getTask": "https://ngpu.ai/user/queryTask",
+                    "comment": "https://aiinfura.readme.io/reference/sadtalker"
+                }
+            }
+        },
+        "stableDiffusion": {
+            "base": {
+                "channelId": "1090191265439699076",
+                "channelName": "stableDiffusion"
+            },
+            "urls": {
+                "stableDiffusion": {
+                    "methodMode": 0,
+                    "methodUrl": "https://ngpu.ai/user/schedulingTask?paramUrl=sdapi/v1/img2img&paramPort=8075",
+                    "getTask": "https://ngpu.ai/user/queryTask",
+                    "comment": "https://aiinfura.readme.io/reference/sadtalker"
+                }
+            }
+        },
+        "blip": {
+            "base": {
+                "channelId": "1090191265439699076",
+                "channelName": "blip"
+            },
+            "urls": {
+                "blip": {
+                    "methodMode": 0,
+                    "methodUrl": "https://ngpu.ai/user/schedulingTask?paramUrl=predictions&paramPort=8075",
+                    "getTask": "https://ngpu.ai/user/queryTask",
+                    "comment": "https://aiinfura.readme.io/reference/img2txt"
+                }
+            }
+        },
+        "llm": {
+            "base": {
+                "channelId": "1090191265439699076",
+                "channelName": "llm"
+            },
+            "urls": {
+                "llm": {
+                    "methodMode": 0,
+                    "methodUrl": "https://ngpu.ai/user/schedulingTask?paramUrl=startSync&paramPort=8075",
+                    "getTask": "https://ngpu.ai/user/queryTask",
+                    "comment": "https://aiinfura.readme.io/reference/sadtalker"
+                }
+            }
+        },
+        "removeBG": {
+            "base": {
+                "channelId": "1090191265439699076",
+                "channelName": "removeBG"
+            },
+            "urls": {
+                "removeBG": {
+                    "methodMode": 0,
+                    "methodUrl": "https://ngpu.ai/user/schedulingTask?paramUrl=removeBG&paramPort=7740&taskMode=Async",
+                    "getTask": "https://ngpu.ai/user/queryTask",
+                    "comment": "https://aiinfura.readme.io/reference/removebg"
+                }
+            }
+        },
+        "replaceBG": {
+            "base": {
+                "channelId": "1090191265439699076",
+                "channelName": "replaceBG"
+            },
+            "urls": {
+                "replaceBG": {
+                    "methodMode": 0,
+                    "methodUrl": "https://ngpu.ai/user/schedulingTask?paramUrl=replaceBG&paramPort=7740&taskMode=Async",
+                    "getTask": "https://ngpu.ai/user/queryTask",
+                    "comment": "https://ngpu.readme.io/reference/removebg"
+                }
+            }
+        }
+    }
+}
