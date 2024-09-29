@@ -9,17 +9,17 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/nGPU/bot/common"
+	"github.com/nGPU/bot/configure"
+	"github.com/nGPU/bot/header"
+	"github.com/nGPU/bot/implementation"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/common"
-	"github.com/nGPU/discordBot/configure"
-	"github.com/nGPU/discordBot/header"
-	"github.com/nGPU/discordBot/implementation"
 )
 
 type RemoveBG struct {
 	roots        *x509.CertPool
 	rootPEM      []byte
-	store        header.PluginStore
+	store        header.DiscordPluginStore
 	commandLines []*header.CommandLine
 }
 
@@ -288,8 +288,8 @@ func (a *RemoveBG) removeBG(s *discordgo.Session, i *discordgo.InteractionCreate
 			log4plus.Info("%s DownloadFile newUrl=[%s] localPath=[%s]", funName, newUrl, localPath)
 
 			cmdlines = append(cmdlines, fmt.Sprintf("%s", cmdName))
-			cmdlines = append(cmdlines, fmt.Sprintf("source:%s", removeBGBody.ImageUrl))
-			cmdlines = append(cmdlines, fmt.Sprintf("dest:%s", newUrl))
+			cmdlines = append(cmdlines, fmt.Sprintf("target image: %s", removeBGBody.ImageUrl))
+			cmdlines = append(cmdlines, fmt.Sprintf("obtained image: %s", newUrl))
 			cmdlines = append(cmdlines, fmt.Sprintf("For detailed interface explanations, please refer to:%s",
 				configure.SingtonConfigure().Interfaces.RemoveBG.Urls.RemoveBG.Comment))
 			a.setFirstComplete(cmdlines, s, i)
@@ -460,8 +460,9 @@ func (a *RemoveBG) replaceBG(s *discordgo.Session, i *discordgo.InteractionCreat
 			log4plus.Info("%s DownloadFile newUrl=[%s] localPath=[%s]", funName, newUrl, localPath)
 
 			cmdlines = append(cmdlines, fmt.Sprintf("%s", cmdName))
-			cmdlines = append(cmdlines, fmt.Sprintf("source:%s", removeBGBody.SrcUrl))
-			cmdlines = append(cmdlines, fmt.Sprintf("dest:%s", newUrl))
+			cmdlines = append(cmdlines, fmt.Sprintf("target image: %s", removeBGBody.SrcUrl))
+			cmdlines = append(cmdlines, fmt.Sprintf("replaced background image: %s", removeBGBody.BGUrl))
+			cmdlines = append(cmdlines, fmt.Sprintf("obtained image: %s", newUrl))
 			cmdlines = append(cmdlines, fmt.Sprintf("For detailed interface explanations, please refer to:%s",
 				configure.SingtonConfigure().Interfaces.ReplaceBG.Urls.ReplaceBG.Comment))
 			a.setFirstComplete(cmdlines, s, i)
@@ -547,7 +548,7 @@ func (a *RemoveBG) setAnswerError(cmd string, err string, s *discordgo.Session, 
 	return content
 }
 
-func SingtonRemoveBG(store header.PluginStore) *RemoveBG {
+func SingtonRemoveBG(store header.DiscordPluginStore) *RemoveBG {
 	if nil == gRemoveBG {
 		gRemoveBG = &RemoveBG{
 			store: store,

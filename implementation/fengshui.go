@@ -10,16 +10,16 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/nGPU/bot/configure"
+	"github.com/nGPU/bot/db"
+	"github.com/nGPU/bot/header"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/configure"
-	"github.com/nGPU/discordBot/db"
-	"github.com/nGPU/discordBot/header"
 )
 
 type Fengshui struct {
-	roots        *x509.CertPool
-	rootPEM      []byte
-	store        header.PluginStore
+	roots   *x509.CertPool
+	rootPEM []byte
+	// store        header.DiscordPluginStore
 	commandLines []*header.CommandLine
 }
 

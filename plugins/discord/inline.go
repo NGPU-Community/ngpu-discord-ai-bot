@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/nGPU/discordBot/header"
+	"github.com/nGPU/bot/header"
 )
 
 func makeContent(before string, cmdName string, content string) string {

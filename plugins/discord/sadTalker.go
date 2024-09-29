@@ -9,17 +9,17 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/nGPU/bot/common"
+	"github.com/nGPU/bot/configure"
+	"github.com/nGPU/bot/header"
+	"github.com/nGPU/bot/implementation"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/common"
-	"github.com/nGPU/discordBot/configure"
-	"github.com/nGPU/discordBot/header"
-	"github.com/nGPU/discordBot/implementation"
 )
 
 type SadTalker struct {
 	roots        *x509.CertPool
 	rootPEM      []byte
-	store        header.PluginStore
+	store        header.DiscordPluginStore
 	commandLines []*header.CommandLine
 }
 
@@ -99,7 +99,6 @@ func (a *SadTalker) Command(s *discordgo.Session, i *discordgo.InteractionCreate
 		content = makeContent(value.Command, value.En, value.Zh)
 	}
 
-	/*Subscription 的指令*/
 	discordId := common.GetUserId(s, i)
 	disabledPayment := false
 	err, exist, user := a.store.GetUserBase(discordId)
@@ -117,7 +116,6 @@ func (a *SadTalker) Command(s *discordgo.Session, i *discordgo.InteractionCreate
 	header.YearPaymentButton.URL = header.MakePaymentUrl(configure.SingtonConfigure().Stripe.PaymentUrl, discordId, header.YearPrice, user.EMail)
 	header.YearPaymentButton.Disabled = disabledPayment
 
-	// 构建交互回应数据
 	data := makeData("make/help Command", "Command Description", content, common.GetColor())
 	response := &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -129,7 +127,6 @@ func (a *SadTalker) Command(s *discordgo.Session, i *discordgo.InteractionCreate
 }
 
 func (a *SadTalker) getAttachment(s *discordgo.Session, i *discordgo.InteractionCreate, name string) string {
-	// 通过 name 属性识别每个选项
 	for _, option := range i.ApplicationCommandData().Options {
 		if option.Type == discordgo.ApplicationCommandOptionAttachment {
 			if name == option.Name {
@@ -144,7 +141,7 @@ func (a *SadTalker) getAttachment(s *discordgo.Session, i *discordgo.Interaction
 
 func (a *SadTalker) parseSadTalker(s *discordgo.Session, i *discordgo.InteractionCreate) (error, []byte, header.RequestSadTalker) {
 	funName := "parseSadTalker"
-	//解析参数
+
 	backgroundName := ""
 	logoUrl := ""
 	var imageUrl string
@@ -260,7 +257,6 @@ func (a *SadTalker) sadTalker(s *discordgo.Session, i *discordgo.InteractionCrea
 	a.setFirstComplete(cmdlines, s, i)
 	cmdlines = cmdlines[:0]
 
-	//循环获取返回的数据
 	err, resultData := a.store.WaitingTaskId(taskId)
 	if err != nil {
 		cmdlines = append(cmdlines, fmt.Sprintf("%s", cmdName))
@@ -306,8 +302,9 @@ func (a *SadTalker) sadTalker(s *discordgo.Session, i *discordgo.InteractionCrea
 			log4plus.Info("%s DownloadFile newUrl=[%s] localPath=[%s]", funName, newUrl, localPath)
 
 			cmdlines = append(cmdlines, fmt.Sprintf("%s", cmdName))
-			cmdlines = append(cmdlines, fmt.Sprintf("source:%s", sadTalkerBody.ImageUrl))
-			cmdlines = append(cmdlines, fmt.Sprintf("dest:%s", newUrl))
+			cmdlines = append(cmdlines, fmt.Sprintf("original image: %s", sadTalkerBody.ImageUrl))
+			cmdlines = append(cmdlines, fmt.Sprintf("voice content: %s", sadTalkerBody.Text))
+			cmdlines = append(cmdlines, fmt.Sprintf("generate video: %s", newUrl))
 			cmdlines = append(cmdlines, fmt.Sprintf("For detailed interface explanations, please refer to:%s",
 				configure.SingtonConfigure().Interfaces.SadTalker.Urls.SadTalker.Comment))
 			a.setFirstComplete(cmdlines, s, i)
@@ -389,7 +386,7 @@ func (a *SadTalker) setAnswerError(cmd string, err string, s *discordgo.Session,
 	return content
 }
 
-func SingtonSadTalker(store header.PluginStore) *SadTalker {
+func SingtonSadTalker(store header.DiscordPluginStore) *SadTalker {
 	if nil == gSadTalker {
 		gSadTalker = &SadTalker{
 			store: store,

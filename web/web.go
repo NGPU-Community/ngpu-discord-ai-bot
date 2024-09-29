@@ -8,11 +8,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nGPU/bot/configure"
+	"github.com/nGPU/bot/db"
+	"github.com/nGPU/bot/header"
+	"github.com/nGPU/bot/middleware"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/configure"
-	"github.com/nGPU/discordBot/db"
-	"github.com/nGPU/discordBot/header"
-	"github.com/nGPU/discordBot/middleware"
 )
 
 type Web struct {

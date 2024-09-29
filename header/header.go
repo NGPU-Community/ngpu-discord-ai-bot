@@ -75,18 +75,50 @@ type RequestData struct {
 	Data    json.RawMessage `json:"data"`
 }
 
+/*Discord Plugin*/
 type DiscordMsgFunction func(s *discordgo.Session, i *discordgo.InteractionCreate)
-type TelegramMsgFunction func(c tele.Context)
-type PluginStore interface {
+type DiscordPluginStore interface {
 	RegisteredCommand(cmd *discordgo.ApplicationCommand)
 	SetDiscordFunction(funName string, fun DiscordMsgFunction)
-	SetTelegramFunction(funName string, fun TelegramMsgFunction)
 	AddCommandLine(commands []*CommandLine)
 	GetCommandLine() ([]string, []string)
 	CheckBTCAddress(btcAddress string) bool
 	GetUserBase(discordId string) (error, bool, ResponseUserInfo)
 	WaitingTaskId(taskId string) (error, string)
 	DownloadFile(url string) (err error, newUrl string, localPath string)
+}
+
+/*Telegram Plugin*/
+
+type Step struct {
+	StepId      int             `json:"stepId"`
+	RequestTime time.Time       `json:"request"`
+	Data        json.RawMessage `json:"data"`
+}
+
+type UserStep struct {
+	TelegramId   int64  `json:"telegramId"`
+	FunctionName string `json:"functionName"`
+	MaxStep      int    `json:"maxStep"`
+	MessageId    int    `json:"messageId"`
+	Steps        []Step `json:"steps"`
+}
+
+type TelegramMsgFunction func(c tele.Context) error
+type TelegramInlineFunction func(c tele.Context, data string) error
+type TelegramPluginStore interface {
+	GetBotObject() *tele.Bot
+	SetTelegramFunction(major, minor, showTxt string, fun TelegramMsgFunction)
+	SetInlineFunction(major, data string, fun TelegramInlineFunction)
+	ClearInlineFunction()
+	CheckBTCAddress(btcAddress string) bool
+	WaitingTaskId(taskId string) (error, string)
+	SaveMediaFile(fileId string) (error, string)
+	DownloadFile(url string) (err error, newUrl string, localPath string)
+
+	AddUser(user *UserStep) error
+	DeleteUser(telegramId int64)
+	FindUser(telegramId int64) *UserStep
 }
 
 var (

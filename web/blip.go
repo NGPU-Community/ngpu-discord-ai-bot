@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nGPU/bot/db"
+	"github.com/nGPU/bot/header"
+	"github.com/nGPU/bot/implementation"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/db"
-	"github.com/nGPU/discordBot/header"
-	"github.com/nGPU/discordBot/implementation"
 )
 
 const (
@@ -42,7 +42,6 @@ func (w *BlipWeb) img2txt(c *gin.Context) {
 		return
 	}
 	log4plus.Info("%s x-api-key=[%s]", funName, apiKey)
-
 	if strings.ToLower(apiKey) != "123456" {
 		err, spaceTime := db.SingtonUserDB().CheckApiKey(apiKey)
 		if err != nil {

@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/nGPU/bot/configure"
+	"github.com/nGPU/bot/header"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/configure"
-	"github.com/nGPU/discordBot/header"
 )
 
 type PaymentState int

@@ -16,8 +16,8 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/nGPU/bot/configure"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/configure"
 )
 
 func GetColor() int {

@@ -19,11 +19,11 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/nGPU/bot/configure"
+	"github.com/nGPU/bot/db"
+	"github.com/nGPU/bot/header"
+	"github.com/nGPU/bot/plugins/discord"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/configure"
-	"github.com/nGPU/discordBot/db"
-	"github.com/nGPU/discordBot/header"
-	"github.com/nGPU/discordBot/plugins/discord"
 )
 
 type Discord struct {
@@ -39,7 +39,7 @@ type Discord struct {
 }
 
 var gSession *discordgo.Session
-var gDiscordWeb *Discord
+var gDiscord *Discord
 
 func (w *Discord) Version() string {
 	return "Discord Version 1.0.0"
@@ -112,11 +112,11 @@ func (w *Discord) getBRC20(BtcAddress string, roots *x509.CertPool) (error, bool
 		Timeout:   time.Duration(30) * time.Second,
 	}
 	defer client.CloseIdleConnections()
-	//创建请求
+
 	var reqUri = fmt.Sprintf("%s?address=%s", configure.SingtonConfigure().Interfaces.BTC.BtcAmtUri, BtcAddress)
 	req, err := http.NewRequest("GET", reqUri, nil)
 	log4plus.Info("%s http.NewRequest url=[%s]", funName, reqUri)
-	//发起请求
+
 	response, err := client.Do(req)
 	if err != nil {
 		log4plus.Error("%s client.Do Failed err=[%s] url=[%s]", funName, err.Error(), reqUri)
@@ -153,14 +153,12 @@ func (w *Discord) getBRC20(BtcAddress string, roots *x509.CertPool) (error, bool
 
 func (w *Discord) responseMsg(s *discordgo.Session, i *discordgo.InteractionCreate, msg string) error {
 	funName := "responseMsg"
-	// 构建交互回应
 	response := &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: msg,
 		},
 	}
-	// 发送交互回应
 	err := s.InteractionRespond(i.Interaction, response)
 	if err != nil {
 		log4plus.Error("%s InteractionRespond Failed er=[%s]", funName, err.Error())
@@ -353,8 +351,14 @@ func (w *Discord) Init() {
 }
 
 func SingtonDiscord() *Discord {
-	if nil == gDiscordWeb {
-		gDiscordWeb = &Discord{
+	if nil == gDiscord {
+		if strings.Trim(configure.SingtonConfigure().Token.Discord.Token, " ") == "" {
+			log4plus.Error("<<<<---->>>> Discord Token is empty")
+			return nil
+		}
+		log4plus.Info("Discord Token is [%s]", configure.SingtonConfigure().Token.Discord.Token)
+
+		gDiscord = &Discord{
 			msgChannelId:       nil,
 			msgSession:         nil,
 			msgFuncs:           make(map[string]header.DiscordMsgFunction),
@@ -362,26 +366,29 @@ func SingtonDiscord() *Discord {
 			commandLines:       make(map[string]string),
 		}
 
-		log4plus.Info("discord.SingtonFaceFusion(gDiscordWeb)")
-		discord.SingtonFaceFusion(gDiscordWeb)
+		log4plus.Info("discord.SingtonFaceFusion(gDiscord)")
+		discord.SingtonFaceFusion(gDiscord)
 
-		log4plus.Info("discord.SingtonSadTalker(gDiscordWeb)")
-		discord.SingtonSadTalker(gDiscordWeb)
+		log4plus.Info("discord.SingtonSadTalker(gDiscord)")
+		discord.SingtonSadTalker(gDiscord)
 
-		log4plus.Info("discord.SingtonBlip(gDiscordWeb)")
-		discord.SingtonBlip(gDiscordWeb)
+		log4plus.Info("discord.SingtonBlip(gDiscord)")
+		discord.SingtonBlip(gDiscord)
 
-		log4plus.Info("discord.SingtonRemoveBG(gDiscordWeb)")
-		discord.SingtonRemoveBG(gDiscordWeb)
+		log4plus.Info("discord.SingtonRemoveBG(gDiscord)")
+		discord.SingtonRemoveBG(gDiscord)
 
-		log4plus.Info("discord.SingtonFengshui(gDiscordWeb)")
-		discord.SingtonFengshui(gDiscordWeb)
+		log4plus.Info("discord.SingtonStableDiffusion(gDiscord)")
+		discord.SingtonStableDiffusion(gDiscord)
 
-		log4plus.Info("discord.SingtonManager(gDiscordWeb)")
-		discord.SingtonManager(gDiscordWeb)
+		log4plus.Info("discord.SingtonFengshui(gDiscord)")
+		discord.SingtonFengshui(gDiscord)
 
-		log4plus.Info("go gDiscordWeb.Init()")
-		go gDiscordWeb.Init()
+		// log4plus.Info("discord.SingtonManager(gDiscord)")
+		// discord.SingtonManager(gDiscord)
+
+		log4plus.Info("go gDiscord.Init()")
+		go gDiscord.Init()
 	}
-	return gDiscordWeb
+	return gDiscord
 }

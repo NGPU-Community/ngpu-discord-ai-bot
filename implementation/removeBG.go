@@ -11,19 +11,18 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/nGPU/discordBot/db"
-
+	"github.com/nGPU/bot/configure"
+	"github.com/nGPU/bot/db"
+	"github.com/nGPU/bot/header"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/configure"
-	"github.com/nGPU/discordBot/header"
 )
 
 var RemoveBGWorkSpaceId = string("ngpu_000000000000006")
 
 type RemoveBG struct {
-	roots        *x509.CertPool
-	rootPEM      []byte
-	store        header.PluginStore
+	roots   *x509.CertPool
+	rootPEM []byte
+	// store        header.DiscordPluginStore
 	commandLines []*header.CommandLine
 }
 

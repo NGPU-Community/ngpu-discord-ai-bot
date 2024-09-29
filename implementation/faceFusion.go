@@ -12,11 +12,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nGPU/discordBot/db"
-
+	"github.com/nGPU/bot/configure"
+	"github.com/nGPU/bot/db"
+	"github.com/nGPU/bot/header"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/configure"
-	"github.com/nGPU/discordBot/header"
 )
 
 var FaceFusionWorkSpaceId = string("ngpu_000000000000002")
@@ -29,7 +28,6 @@ type ResponsePostDataInterface struct {
 type FaceFusion struct {
 	roots        *x509.CertPool
 	rootPEM      []byte
-	store        header.PluginStore
 	commandLines []*header.CommandLine
 }
 

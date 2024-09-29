@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/nGPU/bot/configure"
@@ -17,18 +18,17 @@ import (
 	log4plus "github.com/nGPU/common/log4go"
 )
 
-var BlipWorkSpaceId = string("ngpu_000000000000001")
+var Txt2ImgWorkSpaceId = string("ngpu_000000000000007")
 
-type Blip struct {
-	roots   *x509.CertPool
-	rootPEM []byte
-	// store        header.DiscordPluginStore
+type Txt2Img struct {
+	roots        *x509.CertPool
+	rootPEM      []byte
 	commandLines []*header.CommandLine
 }
 
-var gBlip *Blip
+var gTxt2Img *Txt2Img
 
-func (a *Blip) postData(url string, data []byte) (error, string) {
+func (a *Txt2Img) postData(url string, data []byte) (error, string, string) {
 	funName := "postData"
 	client := &http.Client{
 		Transport: &http.Transport{
@@ -47,20 +47,19 @@ func (a *Blip) postData(url string, data []byte) (error, string) {
 	defer client.CloseIdleConnections()
 
 	log4plus.Info("%s data=[%s]", funName, string(data))
-
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	if err != nil {
 		errString := fmt.Sprintf("%s http.NewRequest Failed url=[%s] err=[%s]", funName, url, err.Error())
 		log4plus.Error(errString)
-		return err, errString
+		return err, errString, ""
 	}
-	request.Header.Add("Authorization", BlipWorkSpaceId)
+	request.Header.Add("Authorization", Txt2ImgWorkSpaceId)
 
 	response, err := client.Do(request)
 	if err != nil {
 		errString := fmt.Sprintf("%s client.Do Failed url=[%s] err=[%s]", funName, url, err.Error())
 		log4plus.Error(errString)
-		return err, errString
+		return err, errString, ""
 	}
 	defer response.Body.Close()
 
@@ -69,13 +68,13 @@ func (a *Blip) postData(url string, data []byte) (error, string) {
 	if err != nil {
 		errString := fmt.Sprintf("%s ioutil.ReadAll Failed url=[%s] err=[%s]", funName, url, err.Error())
 		log4plus.Error(errString)
-		return err, errString
+		return err, errString, ""
 	}
 	log4plus.Info("%s Check StatusCode response.StatusCode=[%d] responseBody=[%s]", funName, response.StatusCode, string(responseBody))
 	if response.StatusCode != 200 {
 		errString := fmt.Sprintf("%s client.Do url=[%s] response.StatusCode=[%d] responseBody=[%s]", funName, url, response.StatusCode, string(responseBody))
 		log4plus.Error(errString)
-		return errors.New(errString), errString
+		return errors.New(errString), errString, ""
 	}
 
 	type ResponseResult struct {
@@ -85,12 +84,12 @@ func (a *Blip) postData(url string, data []byte) (error, string) {
 	if err = json.Unmarshal(responseBody, &result); err != nil {
 		errString := fmt.Sprintf("%s Unmarshal url=[%s] responseBody=[%s]", funName, url, string(responseBody))
 		log4plus.Error(errString)
-		return err, errString
+		return err, errString, ""
 	}
 	if int(result.ResultCode.(float64)) == 200 {
-		type Data struct {
-			Status string `json:"status"`
-			Output string `json:"output"`
+		type Ali struct {
+			ImageUrl string `json:"imageUrl"`
+			Illegal  bool   `json:"illegal"`
 		}
 
 		type Response struct {
@@ -98,38 +97,45 @@ func (a *Blip) postData(url string, data []byte) (error, string) {
 			Msg         string `json:"msg"`
 			ResultSize  int    `json:"result_size"`
 			TaskDursion int    `json:"task_dursion"`
-			Data        Data   `json:"data"`
+			Prompt      string `json:"prompt"`
+			Alis        []Ali  `json:"alis"`
 		}
 		var response Response
 		err := json.Unmarshal(responseBody, &response)
 		if err != nil {
 			errString := fmt.Sprintf("%s Unmarshal url=[%s] responseBody=[%s]", funName, url, string(responseBody))
 			log4plus.Error(errString)
-			return err, errString
+			return err, errString, ""
 		}
-		return nil, response.Data.Output
+
+		var imageUrls []string
+		for _, v := range response.Alis {
+			imageUrls = append(imageUrls, v.ImageUrl)
+		}
+		result := strings.Join(imageUrls, "\n")
+		return nil, response.Prompt, result
 	} else {
 		errString := fmt.Sprintf("%s result result_code=[%d]", funName, int(result.ResultCode.(float64)))
 		log4plus.Error(errString)
-		return errors.New(errString), string(responseBody)
+		return errors.New(errString), string(responseBody), ""
 	}
 }
 
-func (a *Blip) Blip(method, apiKey string, data []byte) (error, string) {
-	funName := "Blip"
+func (a *Txt2Img) Txt2Img(method, apiKey string, data []byte) (error, string, string) {
+	funName := "Txt2Img"
 	now := time.Now().Unix()
 	defer func() {
 		log4plus.Info("%s consumption time=%d(s)", funName, time.Now().Unix()-now)
 	}()
-	url := configure.SingtonConfigure().Interfaces.Blip.Urls.Blip.MethodUrl
+	url := configure.SingtonConfigure().Interfaces.Txt2Img.Urls.Txt2img.MethodUrl
 	requestTime := time.Now()
 
 	//提交生成音频文件
-	err, resultString := a.postData(url, data)
+	err, resultString, prompt := a.postData(url, data)
 	if err != nil {
 		errString := fmt.Sprintf("%s postData Failed err=[%s]", funName, err.Error())
 		log4plus.Error(errString)
-		return err, errString
+		return err, errString, ""
 	}
 	log4plus.Info("%s postData ResultString=[%s]", funName, resultString)
 
@@ -138,12 +144,12 @@ func (a *Blip) Blip(method, apiKey string, data []byte) (error, string) {
 
 	responseTime := time.Now()
 	db.SingtonAPITasksDB().SetAiTaskRunning(taskId, resultString, fmt.Sprintf("%s", responseTime.Format("2006-01-02 15:04:05")), int(responseTime.Unix()-requestTime.Unix()))
-	return nil, resultString
+	return nil, resultString, prompt
 }
 
-func SingtonBlip() *Blip {
-	if nil == gBlip {
-		gBlip = &Blip{}
+func SingtonTxt2Img() *Txt2Img {
+	if nil == gTxt2Img {
+		gTxt2Img = &Txt2Img{}
 	}
-	return gBlip
+	return gTxt2Img
 }

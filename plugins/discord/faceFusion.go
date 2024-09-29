@@ -9,17 +9,17 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/nGPU/bot/common"
+	"github.com/nGPU/bot/configure"
+	"github.com/nGPU/bot/header"
+	"github.com/nGPU/bot/implementation"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/common"
-	"github.com/nGPU/discordBot/configure"
-	"github.com/nGPU/discordBot/header"
-	"github.com/nGPU/discordBot/implementation"
 )
 
 type FaceFusion struct {
 	roots        *x509.CertPool
 	rootPEM      []byte
-	store        header.PluginStore
+	store        header.DiscordPluginStore
 	commandLines []*header.CommandLine
 }
 
@@ -300,8 +300,8 @@ func (a *FaceFusion) blackWhite2Color(s *discordgo.Session, i *discordgo.Interac
 		log4plus.Info("%s DownloadFile newUrl=[%s] localPath=[%s]", funName, newUrl, localPath)
 
 		cmdlines = append(cmdlines, fmt.Sprintf("%s", cmdName))
-		cmdlines = append(cmdlines, fmt.Sprintf("source:%s", backWhite2ColorBody.Source))
-		cmdlines = append(cmdlines, fmt.Sprintf("dest:%s", newUrl))
+		cmdlines = append(cmdlines, fmt.Sprintf("original image: %s", backWhite2ColorBody.Source))
+		cmdlines = append(cmdlines, fmt.Sprintf("image with color: %s", newUrl))
 		cmdlines = append(cmdlines, fmt.Sprintf("For detailed interface explanations, please refer to:%s", configure.SingtonConfigure().Interfaces.FaceFusion.Urls.BlackWhite2Color.Comment))
 		a.setFirstComplete(cmdlines, s, i)
 	}
@@ -902,7 +902,7 @@ func (a *FaceFusion) setAnswerError(cmd string, err string, s *discordgo.Session
 	return content
 }
 
-func SingtonFaceFusion(store header.PluginStore) *FaceFusion {
+func SingtonFaceFusion(store header.DiscordPluginStore) *FaceFusion {
 	if nil == gFaceFusion {
 		gFaceFusion = &FaceFusion{
 			store: store,

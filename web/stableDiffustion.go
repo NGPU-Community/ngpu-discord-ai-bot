@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nGPU/bot/db"
+	"github.com/nGPU/bot/header"
+	"github.com/nGPU/bot/implementation"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/db"
-	"github.com/nGPU/discordBot/header"
-	"github.com/nGPU/discordBot/implementation"
 )
 
 const (

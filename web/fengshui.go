@@ -12,11 +12,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nGPU/bot/aiModule"
+	"github.com/nGPU/bot/configure"
+	"github.com/nGPU/bot/db"
+	"github.com/nGPU/bot/header"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/aiModule"
-	"github.com/nGPU/discordBot/configure"
-	"github.com/nGPU/discordBot/db"
-	"github.com/nGPU/discordBot/header"
 )
 
 const (

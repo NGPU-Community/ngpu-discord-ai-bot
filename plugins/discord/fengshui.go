@@ -13,17 +13,17 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/nGPU/bot/aiModule"
+	"github.com/nGPU/bot/common"
+	"github.com/nGPU/bot/configure"
+	"github.com/nGPU/bot/header"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/aiModule"
-	"github.com/nGPU/discordBot/common"
-	"github.com/nGPU/discordBot/configure"
-	"github.com/nGPU/discordBot/header"
 )
 
 type Fengshui struct {
 	roots        *x509.CertPool
 	rootPEM      []byte
-	store        header.PluginStore
+	store        header.DiscordPluginStore
 	commandLines []*header.CommandLine
 }
 
@@ -188,10 +188,28 @@ func (a *Fengshui) fengshui(s *discordgo.Session, i *discordgo.InteractionCreate
 	}
 
 	if strings.Trim(question, " ") == "" {
-		question = `请首先判断这张图是山水图、房屋图还是人物正脸图：
-如果是山水图：请说明这张山水图的风水情况，说明这张图中哪个方位主吉、哪个方位住凶，以及其它方位的吉凶情况，和走势情况。
-如果是房屋图：请说明这张图中房屋中哪个地方大吉，哪个地方大凶，放置什么东西可以趋吉避凶。
-如果是人像图：请说明根据面像情况说明这张人像图的运势、吉凶、事业情况以及寿命情况。`
+		question = `请首先判断这张图的类型是山水图、房屋图还是人物正脸图，并根据图像类型进行详细分析：
+
+1: 山水图：
+风水情况：
+吉方位：请说明图中哪些方位主吉。例如，山峰的高低、流水的方向是否有利于风水。
+凶方位：请说明图中哪些方位主凶。例如，悬崖、急流、障碍物等可能带来的负面影响。
+其它方位：简述其他方位的吉凶情况及其影响。
+走势情况：请说明山水图的整体走势情况，如水流的方向、山脉的起伏是否有助于聚集正能量。
+
+2:房屋图：
+风水情况：
+大吉方位：请说明图中哪些地方具有大吉的风水。例如，主卧室的位置是否得当，财位是否被合理利用。
+大凶方位：请说明图中哪些地方具有大凶的风水。例如，卫生间的位置是否影响了其他重要区域，是否有煞气影响。
+改善建议：针对大凶方位提供具体的改善建议，包括放置什么风水物件、调整房间布局等方法以趋吉避凶。
+趋吉避凶措施：给出如何优化房屋风水的具体措施，例如调整家具摆放、增加风水吉祥物等。
+
+3:人像图：
+面相分析：
+运势概况：根据面相描述该人物的运势，包括性格特点、健康状态等。
+事业运势：分析该人物的事业运势，例如职业发展潜力、适合的职业方向等。
+吉凶情况：评估该人物的吉凶情况，包括财运、感情运等方面。
+寿命情况：根据面相特征（如面部线条、形状）推测该人物的寿命情况，并解释相关的面相特征。`
 	}
 
 	a.setFirst(fmt.Sprintf("%s\n", cmdName), s, i)
@@ -277,7 +295,7 @@ func (a *Fengshui) setAnswerError(cmd string, err string, s *discordgo.Session, 
 	return content
 }
 
-func SingtonFengshui(store header.PluginStore) *Fengshui {
+func SingtonFengshui(store header.DiscordPluginStore) *Fengshui {
 	if nil == gFengshui {
 		gFengshui = &Fengshui{
 			store: store,

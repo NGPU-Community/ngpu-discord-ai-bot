@@ -7,17 +7,17 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/nGPU/bot/common"
+	"github.com/nGPU/bot/configure"
+	"github.com/nGPU/bot/db"
+	"github.com/nGPU/bot/header"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/common"
-	"github.com/nGPU/discordBot/configure"
-	"github.com/nGPU/discordBot/db"
-	"github.com/nGPU/discordBot/header"
 )
 
 type Manager struct {
 	roots        *x509.CertPool
 	rootPEM      []byte
-	store        header.PluginStore
+	store        header.DiscordPluginStore
 	commandLines []*header.CommandLine
 }
 
@@ -238,7 +238,7 @@ func (w *Manager) getuser(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	common.SetCommandResult(fmt.Sprintf("%s\n", funName), "Get user details", result, s, i)
 }
 
-func SingtonManager(store header.PluginStore) *Manager {
+func SingtonManager(store header.DiscordPluginStore) *Manager {
 	if nil == gManager {
 		gManager = &Manager{
 			store: store,

@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nGPU/discordBot/header"
+	"github.com/nGPU/bot/header"
 
+	"github.com/nGPU/bot/configure"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/configure"
 )
 
 type APITasksDB struct {

@@ -168,6 +168,16 @@ type ReplaceBGConfig struct {
 	Urls ReplaceBGUrls `json:"urls"`
 }
 
+/*************/
+type Txt2ImgUrls struct {
+	Txt2img MethodBase `json:txt2img"`
+}
+
+type Txt2ImgConfig struct {
+	Base ChannelBase `json:"base"`
+	Urls Txt2ImgUrls `json:"urls"`
+}
+
 type InterfacesConfig struct {
 	Manager         ManagerConfig         `json:"manager"`
 	BTC             BtcConfig             `json:"btc"`
@@ -178,6 +188,7 @@ type InterfacesConfig struct {
 	LLm             LLMConfig             `json:"llm"`
 	RemoveBG        RemoveBGConfig        `json:"removeBG"`
 	ReplaceBG       ReplaceBGConfig       `json:"replaceBG"`
+	Txt2Img         Txt2ImgConfig         `json:"txt2img"`
 }
 
 type ApplicationConfig struct {

@@ -10,9 +10,8 @@ import (
 	"time"
 
 	"github.com/liushuangls/go-anthropic/v2"
+	"github.com/nGPU/bot/configure"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/configure"
-	// "github.com/nGPU/discordBot/header"
 )
 
 type Anthropic struct {

@@ -3,12 +3,11 @@ package process
 import (
 	"time"
 
+	"github.com/nGPU/bot/aiModule"
+	"github.com/nGPU/bot/db"
+	"github.com/nGPU/bot/implementation"
+	"github.com/nGPU/bot/plugins"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/aiModule"
-	"github.com/nGPU/discordBot/configure"
-	"github.com/nGPU/discordBot/db"
-	"github.com/nGPU/discordBot/implementation"
-	"github.com/nGPU/discordBot/plugins"
 )
 
 type Process struct {
@@ -36,6 +35,7 @@ func StartPoll() {
 	implementation.SingtonBlip()
 	implementation.SingtonChatTTS()
 	implementation.SingtonLlm()
+	implementation.SingtonTxt2Img()
 	implementation.SingtonStableDiffusion()
 	// implementation.SingtonFengshui()
 	aiModule.SingtonAnthropic()
@@ -46,13 +46,14 @@ func SingtonProcess() *Process {
 		gProcess = &Process{
 			outChannel: make(chan bool),
 		}
-		configure.SingtonConfigure()
+
 		db.SingtonUserDB()
 		db.SingtonPaymentDB()
 		db.SingtonAPITasksDB()
 
 		StartPoll()
 		plugins.SingtonDiscord()
+		plugins.SingtonTelegram()
 	}
 	return gProcess
 }

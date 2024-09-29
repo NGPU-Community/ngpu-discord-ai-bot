@@ -15,63 +15,47 @@ import (
 )
 
 var (
-	prompt = [...]string{
+	promptOllma = [...]string{
 		"Please upload the image you need to analyze: ",
 	}
 )
 
-type Blip struct {
+type Ollma struct {
 	roots        *x509.CertPool
 	rootPEM      []byte
 	store        header.TelegramPluginStore
 	commandLines []*header.CommandLine
 }
 
-var gBlip *Blip
+var gOllma *Ollma
 
-func (a *Blip) parseBlip(c tele.Context, user *header.UserStep) (error, []byte, header.RequestImg2Txt) {
-	funName := "parseBlip"
+func (a *Ollma) parseChat(c tele.Context, user *header.UserStep) (error, []byte, header.RequestLLM) {
+	funName := "parseChat"
 	if user == nil {
 		user := &header.UserStep{
 			TelegramId:   c.Sender().ID,
 			MaxStep:      0,
-			FunctionName: "blip",
+			FunctionName: "chat",
 			MessageId:    c.Message().ID,
 		}
 		a.store.AddUser(user)
-		a.store.GetBotObject().Send(c.Chat(), prompt[user.MaxStep], &tele.SendOptions{
+		a.store.GetBotObject().Send(c.Chat(), promptOllma[user.MaxStep], &tele.SendOptions{
 			ReplyTo: &tele.Message{ID: user.MessageId, Chat: c.Chat()},
 		})
-		return nil, []byte(""), header.RequestImg2Txt{}
+		return nil, []byte(""), header.RequestLLM{}
 	}
 	if user.MaxStep == 0 {
-		photo := c.Message().Photo
-		if photo == nil {
-			errString := fmt.Sprintf("%s c.Message().Photo is null", funName)
-			log4plus.Info("%s errString=[%s]", funName, errString)
-			return errors.New(errString), []byte(""), header.RequestImg2Txt{}
-		}
-		err, imageUrl := a.store.SaveMediaFile(photo.FileID)
-		if err != nil {
-			errString := fmt.Sprintf("%s a.store.SaveMediaFile Failed fileId=[%s]", funName, photo.FileID)
-			log4plus.Info("%s errString=[%s]", funName, errString)
-			return errors.New(errString), []byte(""), header.RequestImg2Txt{}
-		}
-		log4plus.Info("%s imageUrl=[%s]", funName, imageUrl)
+		prompt := c.Text()
+		log4plus.Info("%s prompt=[%s]", funName, prompt)
 
-		input := header.BaseImg2Txt{
-			Task:  "image_captioning",
-			Image: imageUrl,
+		request := header.RequestLLM{
+			Prompt: prompt,
 		}
-		request := header.RequestImg2Txt{
-			Input: input,
-		}
-
 		tmpData, err := json.Marshal(request)
 		if err != nil {
 			errString := fmt.Sprintf("%s json.Marshal Failed err=[%s]", funName, err.Error())
 			log4plus.Info("%s errString=[%s]", funName, errString)
-			return errors.New(errString), []byte(""), header.RequestImg2Txt{}
+			return errors.New(errString), []byte(""), header.RequestLLM{}
 		}
 		var body header.RequestData
 		body.BTCAddr = "0000000000000000000000000GFg7xJaNVN2"
@@ -81,32 +65,31 @@ func (a *Blip) parseBlip(c tele.Context, user *header.UserStep) (error, []byte, 
 		if err != nil {
 			errString := fmt.Sprintf("%s json.Marshal Failed err=[%s]", funName, err.Error())
 			log4plus.Info("%s errString=[%s]", funName, errString)
-			return errors.New(errString), []byte(""), header.RequestImg2Txt{}
+			return errors.New(errString), []byte(""), header.RequestLLM{}
 		}
 		return nil, data, request
 	}
 	errString := fmt.Sprintf("%s Step Failed current Step is one", funName)
 	log4plus.Info("%s errString=[%s]", funName, errString)
-	return errors.New(errString), []byte(""), header.RequestImg2Txt{}
+	return errors.New(errString), []byte(""), header.RequestLLM{}
 }
 
-func (a *Blip) blip(c tele.Context) error {
-	funName := "blip"
+func (a *Ollma) chat(c tele.Context) error {
+	funName := "chat"
 	now := time.Now().Unix()
 	defer func() {
 		log4plus.Info("%s consumption time=%d(s)", funName, time.Now().Unix()-now)
 	}()
-	telegramID := c.Sender()
-	log4plus.Info("%s telegramID=[%d]", funName, telegramID.ID)
+	log4plus.Info("%s telegramID=[%d]", funName, c.Sender().ID)
 
-	user := a.store.FindUser(telegramID.ID)
+	user := a.store.FindUser(c.Sender().ID)
 	if user == nil {
-		a.parseBlip(c, nil)
+		a.parseChat(c, nil)
 		return nil
 	}
-	err, body, _ := a.parseBlip(c, user)
+	err, body, _ := a.parseChat(c, user)
 	if err != nil {
-		errString := fmt.Sprintf("%s parseBlip Failed telegramID=[%d]", funName, telegramID.ID)
+		errString := fmt.Sprintf("%s parseChat Failed telegramID=[%d]", funName, c.Sender().ID)
 		log4plus.Error(errString)
 		a.store.GetBotObject().Send(c.Chat(), errString, &tele.SendOptions{
 			ReplyTo: &tele.Message{ID: user.MessageId, Chat: c.Chat()},
@@ -114,7 +97,7 @@ func (a *Blip) blip(c tele.Context) error {
 		return err
 	}
 	apiKey := "123456"
-	err, txt := implementation.SingtonBlip().Blip(funName, apiKey, body)
+	err, txt := implementation.SingtonLlm().Chat(funName, apiKey, body)
 	if err != nil {
 		a.store.GetBotObject().Send(c.Chat(), err.Error(), &tele.SendOptions{
 			ReplyTo: &tele.Message{ID: user.MessageId, Chat: c.Chat()},
@@ -128,20 +111,20 @@ func (a *Blip) blip(c tele.Context) error {
 	a.store.GetBotObject().Send(c.Chat(), cmdlines, &tele.SendOptions{
 		ReplyTo: &tele.Message{ID: user.MessageId, Chat: c.Chat()},
 	})
-	a.store.DeleteUser(telegramID.ID)
+	a.store.DeleteUser(c.Sender().ID)
 	return nil
 }
 
-func (a *Blip) setFuncs() {
-	a.store.SetTelegramFunction("blip", "blip", "🖼️ blip", a.blip)
+func (a *Ollma) setFuncs() {
+	a.store.SetTelegramFunction("chat", "chat", "🗣️ chat", a.chat)
 }
 
-func SingtonBlip(store header.TelegramPluginStore) *Blip {
-	if nil == gBlip {
-		gBlip = &Blip{
+func SingtonOllma(store header.TelegramPluginStore) *Ollma {
+	if nil == gOllma {
+		gOllma = &Ollma{
 			store: store,
 		}
-		gBlip.setFuncs()
+		gOllma.setFuncs()
 	}
-	return gBlip
+	return gOllma
 }
