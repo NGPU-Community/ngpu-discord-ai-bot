@@ -6,14 +6,13 @@ import (
 	"os"
 	"path/filepath"
 	"runtime/debug"
-	"strings"
 	"time"
 
+	"github.com/nGPU/bot/configure"
+	"github.com/nGPU/bot/process"
+	"github.com/nGPU/bot/web"
 	"github.com/nGPU/common"
 	log4plus "github.com/nGPU/common/log4go"
-	"github.com/nGPU/discordBot/configure"
-	"github.com/nGPU/discordBot/process"
-	"github.com/nGPU/discordBot/web"
 )
 
 const (
@@ -98,13 +97,10 @@ func main() {
 	}
 	setLog()
 	defer log4plus.Close()
-	if strings.Trim(configure.SingtonConfigure().Token.Discord.Token, " ") == "" {
-		log4plus.Error("<<<<---->>>> Discord Token is empty")
-		return
-	}
-	log4plus.Info("Discord Token is [%s]", configure.SingtonConfigure().Token.Discord.Token)
-	web.SingtonWeb()
+
+	configure.SingtonConfigure()
 	process.SingtonProcess()
+	web.SingtonWeb()
 	for {
 		time.Sleep(time.Duration(10) * time.Second)
 	}
